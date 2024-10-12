@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "allowJs": true,
+    "baseUrl": ".", // Set the base URL to the root of the project
+    "paths": {
+      "rootModule": ["./src/index.ts"] // Alias for the root module, pointing to the index.ts file
+    }
+  },
+  "exclude": ["./dist", "node_modules"],
+  "include": ["./src", "test"]
+}

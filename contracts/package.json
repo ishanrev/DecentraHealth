@@ -1,0 +1,32 @@
+{
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^22.7.5",
+    "chai": "^4.3.7",
+    "chai-as-promised": "^7.1.1",
+    "ethers": "^6.13.4",
+    "mocha": "^8.4.0 ",
+    "ts-mocha": "^8.0.0",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.6.3"
+  },
+  "scripts": {
+    "test": "ts-mocha 'test/**/*.ts'",
+    "build": "yarn build:circuits && yarn build:contracts",
+    "build:all": "yarn build:circuits && yarn build:contracts && yarn build:app",
+    "build:app": "yarn workspace app build",
+    "build:contracts": "yarn workspace contracts build",
+    "build:circuits": "yarn workspace circuits build",
+    "demo": "./demo.sh"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=16 <17"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
