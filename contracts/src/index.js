@@ -1,10 +1,11 @@
 "use strict";
+// @ts-nocheck
+// import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.proofManagement = void 0;
-// import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 const chai_1 = require("chai");
 const hardhat_1 = require("hardhat");
 // import ethers from "ethers"
@@ -28,10 +29,10 @@ const preProcessWeights = (data, layer) => {
     const randomLayerGradient = data.layers[layer].gradients[0][0];
     const radnomLayerNewWeight = data.layers[layer].updated_weights[0][0];
     let witnessData = {
-        learning_rate: (scale(data.learning_rate)).toString(),
-        prev_weight: (scale(randomLayerWeight)).toString(),
-        loss_gradient: (scale(randomLayerGradient)).toString(),
-        new_weight: (scale(radnomLayerNewWeight)).toString(),
+        learning_rate: scale(data.learning_rate).toString(),
+        prev_weight: scale(randomLayerWeight).toString(),
+        loss_gradient: scale(randomLayerGradient).toString(),
+        new_weight: scale(radnomLayerNewWeight).toString(),
     };
     // console.log(witnessData)
     return witnessData;
@@ -86,17 +87,18 @@ const proofManagement = async () => {
         ],
     };
     [deployer] = await hardhat_1.ethers.getSigners();
+    console.log(deployer);
     verifier = await new typechain_1.SGDVerifier__factory(deployer).deploy();
     zkModel = await new typechain_1.ZkModel__factory(deployer).deploy(verifier.getAddress(), verifier.getAddress());
     client = new index_1.ZKPClient();
     await client.init(fs_1.default.readFileSync(path_1.default.join(__dirname, "../../circuits/zk/circuits/SGD_js/SGD.wasm")), fs_1.default.readFileSync(path_1.default.join(__dirname, "../../circuits/zk/zkeys/SGD.zkey")), "SGD");
     if (!client.initialized) {
-        throw ("client not initialized properly");
+        throw "client not initialized properly";
     }
     let proof = await client.prove(preProcessWeights(data, 0));
     (0, chai_1.expect)(proof).not.to.eq(undefined);
+    let isValid = await client.verifyProof(proof);
     console.log(toSolidityProof(proof));
-    let isValid = await zkModel.sgdVerify(toSolidityProof(proof));
-    return isValid;
+    return { isValid, proof: toSolidityProof(proof) };
 };
 exports.proofManagement = proofManagement;

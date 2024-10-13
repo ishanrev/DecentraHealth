@@ -1,4 +1,6 @@
+// @ts-nocheck
 // import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+
 import { expect } from "chai";
 import { ethers } from "hardhat";
 // import ethers from "ethers"
@@ -6,21 +8,19 @@ import {
   ZkModel,
   SGDVerifier,
   SGDVerifier__factory,
-  ZkModel__factory
+  ZkModel__factory,
 } from "../typechain";
-import {ZKPClient} from "../../circuits/src/index"
+import { ZKPClient } from "../../circuits/src/index";
 import { BigNumberish } from "ethers";
 import fs from "fs";
 import path from "path";
 
-
-
 const scale = (num: number) => {
-  let scale = 1000000
-  return scale*num
+  let scale = 1000000;
+  return scale * num;
 };
 
-const toSolidityProof = (proof:snarkjs.Groth16Proof)=> {
+const toSolidityProof = (proof: snarkjs.Groth16Proof) => {
   return {
     a: [proof.pi_a[0], proof.pi_a[1]] as [BigNumberish, BigNumberish],
     b: [proof.pi_b[0].reverse(), proof.pi_b[1].reverse()] as [
@@ -28,24 +28,24 @@ const toSolidityProof = (proof:snarkjs.Groth16Proof)=> {
       [BigNumberish, BigNumberish]
     ],
     c: [proof.pi_c[0], proof.pi_c[1]] as [BigNumberish, BigNumberish],
-  }
-}
-
-const preProcessWeights = (data: any, layer:number) => {
-  const randomLayerWeight = data.layers[layer].weights[0][0];
-  const randomLayerGradient = data.layers[layer].gradients[0][0];
-  const radnomLayerNewWeight = data.layers[layer].updated_weights[0][0]
-  let witnessData = {
-    learning_rate: (scale(data.learning_rate)).toString(),
-    prev_weight:(scale(randomLayerWeight)).toString(),
-    loss_gradient:(scale(randomLayerGradient)).toString(),
-    new_weight:(scale(radnomLayerNewWeight)).toString(),
   };
-  // console.log(witnessData)
-  return witnessData
 };
 
-export const  proofManagement = async ()=>{
+const preProcessWeights = (data: any, layer: number) => {
+  const randomLayerWeight = data.layers[layer].weights[0][0];
+  const randomLayerGradient = data.layers[layer].gradients[0][0];
+  const radnomLayerNewWeight = data.layers[layer].updated_weights[0][0];
+  let witnessData = {
+    learning_rate: scale(data.learning_rate).toString(),
+    prev_weight: scale(randomLayerWeight).toString(),
+    loss_gradient: scale(randomLayerGradient).toString(),
+    new_weight: scale(radnomLayerNewWeight).toString(),
+  };
+  // console.log(witnessData)
+  return witnessData;
+};
+
+export const proofManagement = async () => {
   let verifier: SGDVerifier;
   let zkModel: ZkModel;
   let deployer;
@@ -96,27 +96,31 @@ export const  proofManagement = async ()=>{
   };
 
   [deployer] = await ethers.getSigners();
+  console.log(deployer);
   verifier = await new SGDVerifier__factory(deployer).deploy();
-  
-  zkModel = await new ZkModel__factory(deployer).deploy(verifier.getAddress(), verifier.getAddress());
-  client =  new ZKPClient()
-  
+
+  zkModel = await new ZkModel__factory(deployer).deploy(
+    verifier.getAddress(),
+    verifier.getAddress()
+  );
+  client = new ZKPClient();
+
   await client.init(
     fs.readFileSync(
       path.join(__dirname, "../../circuits/zk/circuits/SGD_js/SGD.wasm")
     ),
-    fs.readFileSync(path.join(__dirname, "../../circuits/zk/zkeys/SGD.zkey")),"SGD"
+    fs.readFileSync(path.join(__dirname, "../../circuits/zk/zkeys/SGD.zkey")),
+    "SGD"
   );
 
-  if (!client.initialized) {throw("client not initialized properly")}
-  let proof = await client.prove(preProcessWeights(data,0));
+  if (!client.initialized) {
+    throw "client not initialized properly";
+  }
+  let proof = await client.prove(preProcessWeights(data, 0));
   expect(proof).not.to.eq(undefined);
-  console.log(toSolidityProof(proof))
 
-  let isValid = await zkModel.sgdVerify(
-    toSolidityProof(proof)
-  )
+  let isValid = await client.verifyProof(proof);
+  console.log(toSolidityProof(proof));
 
-  return isValid
-}
-
+  return { isValid, proof: toSolidityProof(proof) };
+};

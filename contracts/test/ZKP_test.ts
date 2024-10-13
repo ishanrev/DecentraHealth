@@ -66,7 +66,7 @@ describe("Test ZKP contract", function () {
     [deployer] = await ethers.getSigners();
     verifier = await new SGDVerifier__factory(deployer).deploy();
     
-    zkModel = await new ZkModel__factory(deployer).deploy(verifier.getAddress(), verifier.getAddress());
+    zkModel = await new ZkModel__factory(deployer).deploy(verifier.getAddress());
     client =  new ZKPClient()
     
     await client.init(

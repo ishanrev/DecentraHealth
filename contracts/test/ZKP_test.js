@@ -63,7 +63,7 @@ describe("Test ZKP contract", function () {
     this.beforeEach(async () => {
         [deployer] = await hardhat_1.ethers.getSigners();
         verifier = await new typechain_1.SGDVerifier__factory(deployer).deploy();
-        zkModel = await new typechain_1.ZkModel__factory(deployer).deploy(verifier.getAddress(), verifier.getAddress());
+        zkModel = await new typechain_1.ZkModel__factory(deployer).deploy(verifier.getAddress());
         client = new index_1.ZKPClient();
         await client.init(fs_1.default.readFileSync(path_1.default.join(__dirname, "../../circuits/zk/circuits/SGD_js/SGD.wasm")), fs_1.default.readFileSync(path_1.default.join(__dirname, "../../circuits/zk/zkeys/SGD.zkey")), "SGD");
         console.log(client.initialized);
