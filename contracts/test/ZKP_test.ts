@@ -86,7 +86,8 @@ describe("Test ZKP contract", function () {
     if (!client.initialized) {throw("client not initialized properly")}
     let proof = await client.prove(preProcessWeights(data,0));
     expect(proof).not.to.eq(undefined);
-    
+    console.log(toSolidityProof(proof))
+
     let isValid = await zkModel.sgdVerify(
       toSolidityProof(proof)
     )
@@ -100,12 +101,14 @@ describe("Test ZKP contract", function () {
     if (!client.initialized) {throw("client not initialized properly")}
     let proof = await client.prove(preProcessWeights(data,1));
     expect(proof).not.to.eq(undefined);
-    
+    console.log(toSolidityProof(proof))
     let isValid = await zkModel.sgdVerify(
       toSolidityProof(proof)
     )
     expect(isValid).to.eq(false, "The ZKP proof was incorrect")
   });
+
+  
   const preProcessWeights = (data: any, layer:number) => {
     const randomLayerWeight = data.layers[layer].weights[0][0];
     const randomLayerGradient = data.layers[layer].gradients[0][0];

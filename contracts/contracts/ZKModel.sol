@@ -22,8 +22,8 @@ contract ZkModel {
     address public immutable mseVerifier;
     uint256[3][] public records; // just a sample var
 
-    constructor(address _sgdVerifier, address _mseVerifier) {
-        sgdVerifier = _sgdVerifier;
+    constructor(address _mseVerifier) {
+        sgdVerifier = 0x24515599ecfae88de1F5284508C3B942b542Cc3d;
         mseVerifier = _mseVerifier;
     }
 
