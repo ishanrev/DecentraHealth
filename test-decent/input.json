@@ -1,0 +1,6 @@
+{
+  "learning_rate": 1000,
+  "prev_weight": 500000,       
+  "loss_gradient": 10000,        
+  "new_weight": 501000         
+}
